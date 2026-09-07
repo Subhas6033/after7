@@ -1,0 +1,114 @@
+After7 Source-Available License
+Version 1.0 — September 2026
+
+Copyright (c) 2026 After7. All rights reserved.
+
+1. DEFINITIONS
+
+"Software" means the After7 source code, documentation, configuration,
+assets, and other materials distributed with this license.
+
+"Owner" means After7 and its authorized copyright holders.
+
+"User" means any person who accesses or uses the Software.
+
+2. PERMITTED USE
+
+The Software is made available for viewing, evaluation, learning, testing,
+and personal development purposes.
+
+Users may:
+
+- View and inspect the source code.
+- Run the Software locally for evaluation, testing, or development.
+- Report bugs, security issues, and other problems to the Owner.
+- Submit suggestions, feedback, and feature requests to the Owner.
+- Fork the repository for personal experimentation, provided that such
+  fork is not publicly distributed or commercially used.
+
+3. RESTRICTIONS
+
+Without prior written permission from the Owner, you may NOT:
+
+- Redistribute or publish the Software or any substantial portion of it.
+- Sell, sublicense, rent, lease, or commercially distribute the Software.
+- Use the Software or substantial portions of it to create or operate a
+  competing service.
+- Publish modified or derivative versions of the Software.
+- Distribute public forks or modified copies of the Software.
+- Submit pull requests or other code contributions to the official
+  repository. The official repository does not accept code contributions
+  or pull requests from the public.
+- Remove or alter copyright, license, trademark, or attribution notices.
+- Represent yourself as an official developer, maintainer, or representative
+  of After7 without permission.
+
+4. BUG REPORTS AND FEEDBACK
+
+Bug reports, security reports, suggestions, and feature requests are
+welcome.
+
+Reporting an issue or submitting feedback does not grant the submitter
+any ownership rights over the Software.
+
+The Owner may use, modify, reproduce, implement, or otherwise incorporate
+submitted feedback or suggestions into the Software without obligation
+to compensate the submitter.
+
+5. SECURITY REPORTING
+
+Security vulnerabilities should be reported privately to the Owner through
+the security contact or reporting mechanism specified by the project.
+
+Security researchers are requested not to publicly disclose an
+unresolved vulnerability before the Owner has had a reasonable opportunity
+to investigate and address it.
+
+6. INTELLECTUAL PROPERTY
+
+All rights, title, and interest in and to the Software, including its
+source code, design, branding, trademarks, documentation, and other
+intellectual property, remain with the Owner unless otherwise stated.
+
+This license does not transfer ownership of the Software or grant any
+patent, trademark, copyright, or other intellectual-property rights except
+for the limited permissions expressly stated in this license.
+
+7. NO WARRANTY
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT.
+
+IN NO EVENT SHALL THE OWNER OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+8. TERMINATION
+
+Any permission granted under this license automatically terminates if you
+violate the terms of this license.
+
+Upon termination, you must cease all use and distribution of the Software
+and, where applicable, remove publicly distributed copies under your
+control.
+
+9. CHANGES TO THIS LICENSE
+
+The Owner reserves the right to release future versions of this license
+or distribute the Software under additional terms.
+
+10. CONTACT
+
+For bug reports, security issues, feature requests, or other inquiries,
+please use the official After7 project communication channels.
+
+---
+
+After7 is not an open-source project.
+
+Source code may be publicly visible for transparency, learning, evaluation,
+and bug reporting, but no permission is granted to redistribute, modify,
+commercialize, or contribute code to the official project unless expressly
+authorized in writing by the Owner.
