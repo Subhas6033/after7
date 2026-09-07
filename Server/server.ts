@@ -1,9 +1,8 @@
 import "dotenv/config";
 import type { Server } from "node:http";
 import mongoose from "mongoose";
-
 import { app } from "./index.ts";
-import { connectDB, disconnectDB } from "./src/Config/db.config.ts";
+import { connectDB, disconnectDB } from "./src/config/db.config.ts";
 
 const PORT = Number(process.env.PORT) || 5000;
 

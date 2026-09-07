@@ -106,9 +106,10 @@ app.get(
   }),
 );
 
+// TODO: APP endpoints goes here as projects grows
+
 /*
   Handle requests that do not match any registered route.
- 
   This middleware must remain after all application routes.
  */
 app.use((_req: Request, _res: Response, next: NextFunction) => {
