@@ -18,31 +18,31 @@ const asyncHandler = (requestHandler: AsyncRequestHandler): RequestHandler => {
 
 const errorHandler = (
   error: unknown,
-  req: Request,
+  _req: Request,
   res: Response,
-  next: NextFunction,
-) => {
+  _next: NextFunction,
+): Response => {
   if (error instanceof APIERR) {
     return res.status(error.statusCode).json({
       success: error.success,
       message: error.message,
       errors: error.errors,
-      stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
+      ...(process.env.NODE_ENV === "development" && {
+        stack: error.stack,
+      }),
     });
   }
 
-  console.error(error);
+  console.error("[Application] Unhandled error:", error);
 
   return res.status(500).json({
     success: false,
     message: "Internal Server Error",
     errors: [],
-    stack:
-      process.env.NODE_ENV === "development"
-        ? error instanceof Error
-          ? error.stack
-          : undefined
-        : undefined,
+    ...(process.env.NODE_ENV === "development" &&
+      error instanceof Error && {
+        stack: error.stack,
+      }),
   });
 };
 
@@ -50,7 +50,6 @@ class APIERR extends Error {
   statusCode: number;
   success: boolean;
   errors: unknown[];
-  stack?: string;
 
   constructor(
     statusCode: number,

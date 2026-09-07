@@ -32,12 +32,13 @@ const connectDB = async (): Promise<void> => {
 
 const disconnectDB = async (): Promise<void> => {
   if (mongoose.connection.readyState === 0) {
+    console.log("[Shutdown] MongoDB connection already closed");
     return;
   }
 
   await mongoose.connection.close();
 
-  console.log("MongoDB connection closed");
+  console.log("[Shutdown] MongoDB connection closed successfully");
 };
 
 export { connectDB, disconnectDB };
