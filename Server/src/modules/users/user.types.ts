@@ -1,5 +1,3 @@
-import { Types } from "mongoose";
-
 /*
   Roles available in the After7 application.
  */
@@ -20,8 +18,8 @@ export enum UserStatus {
 }
 
 /*
-  Represents the users gender.
-*/
+  Represents the user's gender.
+ */
 export enum UserGender {
   MALE = "male",
   FEMALE = "female",
@@ -32,40 +30,72 @@ export enum UserGender {
 
 /*
   Main User document shape.
-  This interface represents the data stored in MongoDB.
+  This interface represents the application-level data
+  stored in a MongoDB User document.
  */
 export interface IUser {
-  _id: Types.ObjectId;
-
   email: string;
   name: string;
-  gender: UserGender;
+  gender: UserGender | null;
   passwordHash: string;
-
   role: UserRole;
   status: UserStatus;
-
   emailVerified: boolean;
   emailVerifiedAt: Date | null;
-
   lastLoginAt: Date | null;
-
+  /*
+    Soft-delete timestamp.
+    null means the account has not been deleted.
+   */
+  deletedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
-
-  deletedAt: Date | null;
 }
 
 /*
-  Data required when creating a new user.
-  `password` is the plain-text password received from the client.
-  It must be hashed before being stored in MongoDB.
+  Data received when creating a new user.
+  `password` represents the plain-text password
+  received from the client.
+  The password must be hashed before it is stored
+  in MongoDB.
  */
 export interface ICreateUser {
   email: string;
   name: string;
+  gender?: UserGender | null;
   password: string;
   role?: UserRole;
+}
+
+/*
+  Data passed from the service layer to the
+  user repository when creating a MongoDB document.
+  At this point the plain-text password has already
+  been converted into `passwordHash`.
+  Fields marked optional have defaults defined
+  inside the Mongoose schema.
+ */
+export interface ICreateUserDocument {
+  email: string;
+  name: string;
+  gender: UserGender | null;
+
+  /*
+    Hashed password.
+    Never store the plain-text password here.
+   */
+  passwordHash: string;
+
+  /*
+    Mongoose provides the defaults for these fields
+    when they are not supplied.
+   */
+  role?: UserRole;
+  status?: UserStatus;
+  emailVerified?: boolean;
+  emailVerifiedAt?: Date | null;
+  lastLoginAt?: Date | null;
+  deletedAt?: Date | null;
 }
 
 /*
@@ -78,23 +108,20 @@ export interface IUpdateUser {
 
 /*
   Safe user response returned to the client.
-  Never expose passwordHash or other sensitive internal fields.
+  Sensitive fields such as `passwordHash` are
+  intentionally excluded.
+  MongoDB's `_id` is converted to a string `id`.
  */
 export interface IUserResponse {
   id: string;
-
   email: string;
   name: string;
-  gender: string;
-
+  gender: UserGender | null;
   role: UserRole;
   status: UserStatus;
-
   emailVerified: boolean;
   emailVerifiedAt: Date | null;
-
   lastLoginAt: Date | null;
-
   createdAt: Date;
   updatedAt: Date;
 }
