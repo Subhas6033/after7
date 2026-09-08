@@ -78,9 +78,9 @@ app.get("/", (_req: Request, res: Response) => {
 });
 
 // Testing the CI/CD pipeline it will removed later
-app.get("/welcome", (req: Request, res: Response) => {
+app.get("/ci-cd", (req: Request, res: Response) => {
   res.json({
-    message: "Hello User Welcome to the after7 server",
+    message: "CI/CD is working on productions",
     statusCode: 200,
     success: true,
   });
