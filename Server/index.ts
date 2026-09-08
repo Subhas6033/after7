@@ -7,7 +7,7 @@ import {
   APIRES,
   asyncHandler,
   errorHandler,
-} from "./src/Utils/helper.utils.ts";
+} from "./src/utils/helper.utils.ts";
 
 export const app = express();
 const corsOrigin = process.env.CORS_ORIGIN;

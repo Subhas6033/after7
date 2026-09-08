@@ -1,0 +1,55 @@
+name: Backend CI
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - "Server/**"
+
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - "Server/**"
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Build Backend
+
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: Server
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: Server/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript check
+        run: npx tsc --noEmit
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Build Docker image
+        run: docker build -t after7-server:${{ github.sha }} .

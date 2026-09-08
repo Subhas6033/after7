@@ -1,0 +1,62 @@
+pipeline {
+
+    agent any
+
+    options {
+        timestamps()
+        disableConcurrentBuilds()
+    }
+
+    environment {
+        REPO_DIR = "/opt/after7/repository"
+    }
+
+    stages {
+
+        stage("Checkout") {
+
+            steps {
+
+                sh """
+                    set -e
+
+                    cd ${REPO_DIR}
+
+                    git fetch origin
+
+                    git checkout main
+
+                    git reset --hard origin/main
+                """
+            }
+        }
+
+
+        stage("Deploy Backend") {
+
+            steps {
+
+                sh """
+                    chmod +x \
+                        ${REPO_DIR}/jenkins/scripts/deploy-backend.sh
+
+                    ${REPO_DIR}/jenkins/scripts/deploy-backend.sh
+                """
+            }
+        }
+
+
+        stage("Health Check") {
+
+            steps {
+
+                sh """
+                    chmod +x \
+                        ${REPO_DIR}/jenkins/scripts/health-check.sh
+
+                    ${REPO_DIR}/jenkins/scripts/health-check.sh
+                """
+            }
+        }
+    }
+}

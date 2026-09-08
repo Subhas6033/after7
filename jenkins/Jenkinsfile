@@ -1,0 +1,151 @@
+pipeline {
+
+    agent any
+
+    options {
+        timestamps()
+        disableConcurrentBuilds()
+    }
+
+    environment {
+        APP_DIR = "/opt/after7"
+        REPO_DIR = "/opt/after7/repository"
+    }
+
+    stages {
+
+        stage("Checkout") {
+
+            steps {
+
+                echo "Pulling latest After7 changes..."
+
+                sh """
+                    set -e
+
+                    cd ${REPO_DIR}
+
+                    git fetch origin
+
+                    git checkout main
+
+                    git reset --hard origin/main
+                """
+            }
+        }
+
+
+        stage("Detect Changes") {
+
+            steps {
+
+                script {
+
+                    def changes = sh(
+                        script: """
+                            cd ${REPO_DIR}
+
+                            git diff \
+                            HEAD~1 HEAD \
+                            --name-only
+                        """,
+                        returnStdout: true
+                    ).trim()
+
+                    env.FRONTEND_CHANGED =
+                        changes.split("\\n")
+                        .any {
+                            it.startsWith("Client/")
+                        }
+                        ? "true"
+                        : "false"
+
+                    env.BACKEND_CHANGED =
+                        changes.split("\\n")
+                        .any {
+                            it.startsWith("Server/")
+                        }
+                        ? "true"
+                        : "false"
+
+                    echo "Frontend changed: ${env.FRONTEND_CHANGED}"
+                    echo "Backend changed: ${env.BACKEND_CHANGED}"
+                }
+            }
+        }
+
+
+        stage("Deploy Frontend") {
+
+            when {
+                environment {
+                    name: "FRONTEND_CHANGED"
+                    value: "true"
+                }
+            }
+
+            steps {
+
+                sh """
+                    set -e
+
+                    chmod +x \
+                        ${REPO_DIR}/jenkins/scripts/deploy-frontend.sh
+
+                    ${REPO_DIR}/jenkins/scripts/deploy-frontend.sh
+                """
+            }
+        }
+
+
+        stage("Deploy Backend") {
+
+            when {
+                environment {
+                    name: "BACKEND_CHANGED"
+                    value: "true"
+                }
+            }
+
+            steps {
+
+                sh """
+                    set -e
+
+                    chmod +x \
+                        ${REPO_DIR}/jenkins/scripts/deploy-backend.sh
+
+                    ${REPO_DIR}/jenkins/scripts/deploy-backend.sh
+                """
+            }
+        }
+
+
+        stage("Health Check") {
+
+            steps {
+
+                sh """
+                    set -e
+
+                    chmod +x \
+                        ${REPO_DIR}/jenkins/scripts/health-check.sh
+
+                    ${REPO_DIR}/jenkins/scripts/health-check.sh
+                """
+            }
+        }
+    }
+
+
+    post {
+
+        success {
+            echo "After7 deployment completed successfully."
+        }
+
+        failure {
+            echo "After7 deployment failed."
+        }
+    }
+}

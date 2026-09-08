@@ -1,5 +1,8 @@
 import type { Request, Response } from "express";
-import { HTTP_STATUS } from "../../constants/httpConstants.constant.ts";
+import {
+  HTTP_STATUS,
+  HTTP_MESSAGE,
+} from "../../constants/httpConstants.constant.ts";
 import { APIRES } from "../../utils/helper.utils.ts";
 import { registerUser } from "./auth.service.ts";
 
@@ -11,7 +14,5 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
   res
     .status(HTTP_STATUS.CREATED)
-    .json(
-      new APIRES(HTTP_STATUS.CREATED, { user }, "User registered successfully"),
-    );
+    .json(new APIRES(HTTP_STATUS.CREATED, { user }, HTTP_MESSAGE.CREATED));
 };

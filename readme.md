@@ -557,78 +557,232 @@ after7/
 │   └── package.json
 │
 │
-├── server/                              # Express.js backend
+├── server/                                      # Express.js + TypeScript backend
 │   │
 │   ├── src/
 │   │   │
-│   │   ├── config/                      # Configuration
-│   │   │   ├── database.ts              # MongoDB connection
-│   │   │   ├── cloudinary.ts            # Cloudinary configuration
-│   │   │   └── environment.ts           # Environment configuration
+│   │   ├── config/                              # Application configuration
+│   │   │   ├── env.config.ts                    # Environment variables and validation
+│   │   │   ├── database.config.ts               # MongoDB/Mongoose connection
+│   │   │   ├── cloudinary.config.ts             # Cloudinary configuration
+│   │   │   ├── cors.config.ts                   # CORS configuration
+│   │   │   ├── cookie.config.ts                 # Secure cookie configuration
+│   │   │   └── socket.config.ts                 # Socket.IO configuration
 │   │   │
-│   │   ├── controllers/                 # Request controllers
-│   │   │   ├── auth.controller.ts
-│   │   │   ├── user.controller.ts
-│   │   │   ├── chat.controller.ts
-│   │   │   ├── matching.controller.ts
-│   │   │   ├── friend.controller.ts
-│   │   │   └── question.controller.ts
+│   │   ├── constants/                            # Application-wide constants
+│   │   │   ├── httpStatus.ts                    # Centralized HTTP status codes
+│   │   │   ├── app.constants.ts                 # General application constants
+│   │   │   ├── auth.constants.ts                # Authentication constants
+│   │   │   └── socket.constants.ts              # Socket event constants
 │   │   │
-│   │   ├── models/                      # MongoDB models
-│   │   │   ├── User.ts
-│   │   │   ├── Conversation.ts
-│   │   │   ├── Message.ts
-│   │   │   ├── Friendship.ts
-│   │   │   ├── FriendRequest.ts
-│   │   │   ├── Question.ts
-│   │   │   └── Notification.ts
+│   │   ├── modules/                              # Feature/domain-based modules
+│   │   │   │
+│   │   │   ├── auth/                             # Authentication & authorization
+│   │   │   │   ├── auth.controller.ts            # Auth HTTP request handlers
+│   │   │   │   ├── auth.service.ts               # Authentication business logic
+│   │   │   │   ├── auth.repository.ts            # Authentication database operations
+│   │   │   │   ├── auth.validation.ts            # Auth request validation
+│   │   │   │   ├── auth.types.ts                 # Auth TypeScript types
+│   │   │   │   ├── auth.mapper.ts                # Auth data/API response mapping
+│   │   │   │   ├── auth.routes.ts                # Authentication REST routes
+│   │   │   │   └── auth.utils.ts                 # Auth-specific helper functions
+│   │   │   │
+│   │   │   ├── users/                            # User account management
+│   │   │   │   ├── user.model.ts                 # User MongoDB/Mongoose model
+│   │   │   │   ├── user.controller.ts            # User HTTP request handlers
+│   │   │   │   ├── user.service.ts               # User business logic
+│   │   │   │   ├── user.repository.ts            # User database operations
+│   │   │   │   ├── user.validation.ts            # User input validation
+│   │   │   │   ├── user.types.ts                 # User TypeScript types/interfaces
+│   │   │   │   ├── user.mapper.ts                # User API response mapping
+│   │   │   │   └── user.routes.ts                # User REST routes
+│   │   │   │
+│   │   │   ├── profiles/                         # Social profile management
+│   │   │   │   ├── profile.model.ts              # Profile MongoDB/Mongoose model
+│   │   │   │   ├── profile.controller.ts         # Profile request handlers
+│   │   │   │   ├── profile.service.ts            # Profile business logic
+│   │   │   │   ├── profile.repository.ts         # Profile database operations
+│   │   │   │   ├── profile.validation.ts         # Profile input validation
+│   │   │   │   ├── profile.types.ts              # Profile TypeScript types
+│   │   │   │   └── profile.routes.ts             # Profile REST routes
+│   │   │   │
+│   │   │   ├── matching/                         # User matching system
+│   │   │   │   ├── matching.service.ts           # Matching business logic
+│   │   │   │   ├── matching.repository.ts        # Matching database operations
+│   │   │   │   ├── matching.controller.ts        # Matching request handlers
+│   │   │   │   ├── matching.validation.ts        # Matching input validation
+│   │   │   │   ├── matching.types.ts             # Matching TypeScript types
+│   │   │   │   └── matching.routes.ts            # Matching REST routes
+│   │   │   │
+│   │   │   ├── conversations/                    # Chat conversation management
+│   │   │   │   ├── conversation.model.ts         # Conversation MongoDB model
+│   │   │   │   ├── conversation.service.ts      # Conversation business logic
+│   │   │   │   ├── conversation.repository.ts   # Conversation database operations
+│   │   │   │   ├── conversation.types.ts        # Conversation TypeScript types
+│   │   │   │   └── conversation.mapper.ts       # Conversation API mapping
+│   │   │   │
+│   │   │   ├── messages/                         # Chat message management
+│   │   │   │   ├── message.model.ts              # Message MongoDB model
+│   │   │   │   ├── message.controller.ts         # Message request handlers
+│   │   │   │   ├── message.service.ts            # Message business logic
+│   │   │   │   ├── message.repository.ts         # Message database operations
+│   │   │   │   ├── message.validation.ts         # Message validation
+│   │   │   │   ├── message.types.ts              # Message TypeScript types
+│   │   │   │   ├── message.mapper.ts             # Message API mapping
+│   │   │   │   └── message.routes.ts             # Message REST routes
+│   │   │   │
+│   │   │   ├── friendships/                      # Established friendships
+│   │   │   │   ├── friendship.model.ts            # Friendship MongoDB model
+│   │   │   │   ├── friendship.service.ts          # Friendship business logic
+│   │   │   │   ├── friendship.repository.ts       # Friendship database operations
+│   │   │   │   ├── friendship.controller.ts       # Friendship request handlers
+│   │   │   │   ├── friendship.validation.ts       # Friendship validation
+│   │   │   │   ├── friendship.types.ts            # Friendship TypeScript types
+│   │   │   │   └── friendship.routes.ts           # Friendship REST routes
+│   │   │   │
+│   │   │   ├── friend-requests/                  # Friend request lifecycle
+│   │   │   │   ├── friendRequest.model.ts         # Friend request MongoDB model
+│   │   │   │   ├── friendRequest.service.ts       # Friend request business logic
+│   │   │   │   ├── friendRequest.repository.ts   # Friend request DB operations
+│   │   │   │   ├── friendRequest.controller.ts   # Friend request handlers
+│   │   │   │   ├── friendRequest.validation.ts   # Friend request validation
+│   │   │   │   ├── friendRequest.types.ts        # Friend request types
+│   │   │   │   └── friendRequest.routes.ts       # Friend request REST routes
+│   │   │   │
+│   │   │   ├── anonymous-qa/                    # Anonymous Q&A system
+│   │   │   │   ├── questionLink.model.ts         # Anonymous question-link model
+│   │   │   │   ├── question.model.ts             # Question MongoDB model
+│   │   │   │   ├── qa.controller.ts              # Q&A request handlers
+│   │   │   │   ├── qa.service.ts                 # Q&A business logic
+│   │   │   │   ├── qa.repository.ts              # Q&A database operations
+│   │   │   │   ├── qa.validation.ts              # Q&A input validation
+│   │   │   │   ├── qa.types.ts                   # Q&A TypeScript types
+│   │   │   │   └── qa.routes.ts                  # Q&A REST routes
+│   │   │   │
+│   │   │   ├── notifications/                   # Notification system
+│   │   │   │   ├── notification.model.ts         # Notification MongoDB model
+│   │   │   │   ├── notification.service.ts      # Notification business logic
+│   │   │   │   ├── notification.repository.ts   # Notification DB operations
+│   │   │   │   ├── notification.controller.ts   # Notification request handlers
+│   │   │   │   ├── notification.types.ts        # Notification TypeScript types
+│   │   │   │   └── notification.routes.ts       # Notification REST routes
+│   │   │   │
+│   │   │   ├── media/                           # Media upload/management
+│   │   │   │   ├── media.service.ts              # Media upload business logic
+│   │   │   │   ├── media.controller.ts           # Media request handlers
+│   │   │   │   ├── media.types.ts                # Media TypeScript types
+│   │   │   │   ├── media.validation.ts            # File/media validation
+│   │   │   │   └── media.routes.ts               # Media REST routes
+│   │   │   │
+│   │   │   ├── calls/                           # Voice/video call logic
+│   │   │   │   ├── call.service.ts               # Call business logic
+│   │   │   │   ├── call.types.ts                 # Call TypeScript types
+│   │   │   │   └── call.validation.ts            # Call validation
+│   │   │   │
+│   │   │   ├── reports/                         # User/content reporting
+│   │   │   │   ├── report.model.ts               # Report MongoDB model
+│   │   │   │   ├── report.controller.ts          # Report request handlers
+│   │   │   │   ├── report.service.ts             # Report business logic
+│   │   │   │   ├── report.repository.ts          # Report database operations
+│   │   │   │   ├── report.validation.ts          # Report validation
+│   │   │   │   ├── report.types.ts               # Report TypeScript types
+│   │   │   │   └── report.routes.ts              # Report REST routes
+│   │   │   │
+│   │   │   ├── blocks/                          # User blocking system
+│   │   │   │   ├── block.model.ts                # Block MongoDB model
+│   │   │   │   ├── block.service.ts              # Block business logic
+│   │   │   │   ├── block.repository.ts           # Block database operations
+│   │   │   │   ├── block.controller.ts           # Block request handlers
+│   │   │   │   ├── block.types.ts                # Block TypeScript types
+│   │   │   │   └── block.routes.ts               # Block REST routes
+│   │   │   │
+│   │   │   └── moderation/                      # Content/user moderation
+│   │   │       ├── moderation.service.ts         # Moderation business logic
+│   │   │       ├── moderation.types.ts           # Moderation TypeScript types
+│   │   │       └── moderation.utils.ts           # Moderation helper functions
 │   │   │
-│   │   ├── routes/                      # REST API routes
-│   │   │   ├── auth.routes.ts
-│   │   │   ├── user.routes.ts
-│   │   │   ├── chat.routes.ts
-│   │   │   ├── matching.routes.ts
-│   │   │   ├── friend.routes.ts
-│   │   │   └── question.routes.ts
+│   │   ├── middlewares/                          # Express middleware
+│   │   │   ├── auth.middleware.ts                # JWT authentication
+│   │   │   ├── error.middleware.ts              # Centralized error handling
+│   │   │   ├── validation.middleware.ts         # Request validation middleware
+│   │   │   ├── rateLimit.middleware.ts          # API rate limiting
+│   │   │   ├── upload.middleware.ts             # Multipart/file upload handling
+│   │   │   ├── notFound.middleware.ts           # Handles unknown routes
+│   │   │   └── requestId.middleware.ts          # Request ID generation/tracing
 │   │   │
-│   │   ├── middleware/                  # Express middleware
-│   │   │   ├── auth.middleware.ts
-│   │   │   ├── error.middleware.ts
-│   │   │   ├── validation.middleware.ts
-│   │   │   └── upload.middleware.ts
+│   │   ├── sockets/                              # Socket.IO real-time layer
+│   │   │   ├── socket.server.ts                 # Socket.IO server initialization
+│   │   │   ├── socket.middleware.ts             # Socket authentication
+│   │   │   ├── socket.types.ts                  # Socket TypeScript types
+│   │   │   │
+│   │   │   ├── handlers/                        # Socket event handlers
+│   │   │   │   ├── chat.handler.ts              # Real-time messaging events
+│   │   │   │   ├── presence.handler.ts          # Online/offline/presence events
+│   │   │   │   ├── notification.handler.ts      # Real-time notifications
+│   │   │   │   └── call.handler.ts              # WebRTC signaling events
+│   │   │   │
+│   │   │   └── events/                          # Socket event definitions
+│   │   │       ├── chat.events.ts               # Chat event names
+│   │   │       ├── presence.events.ts           # Presence event names
+│   │   │       ├── notification.events.ts       # Notification event names
+│   │   │       └── call.events.ts               # Call/WebRTC event names
 │   │   │
-│   │   ├── services/                    # Business/application services
-│   │   │   ├── auth.service.ts
-│   │   │   ├── user.service.ts
-│   │   │   ├── chat.service.ts
-│   │   │   ├── matching.service.ts
-│   │   │   ├── friend.service.ts
-│   │   │   ├── question.service.ts
-│   │   │   └── notification.service.ts
+│   │   ├── routes/                              # Global REST route registration
+│   │   │   └── index.ts                         # Registers all module routes
 │   │   │
-│   │   ├── socket/                      # Socket.IO handlers
-│   │   │   ├── index.ts
-│   │   │   ├── chat.socket.ts
-│   │   │   ├── presence.socket.ts
-│   │   │   ├── notification.socket.ts
-│   │   │   └── call.socket.ts
+│   │   ├── types/                               # Shared TypeScript types
+│   │   │   ├── express.d.ts                     # Express Request type extensions
+│   │   │   ├── common.types.ts                  # Common shared types
+│   │   │   ├── api.types.ts                     # Standard API response types
+│   │   │   └── pagination.types.ts              # Pagination types
 │   │   │
-│   │   ├── types/                       # TypeScript interfaces
+│   │   ├── utils/                               # Shared utility functions
+│   │   │   ├── apiResponse.ts                   # Standard API response helper
+│   │   │   ├── asyncHandler.ts                  # Async controller wrapper
+│   │   │   ├── appError.ts                      # Custom application error
+│   │   │   ├── logger.ts                        # Application logging
+│   │   │   ├── pagination.ts                    # Pagination helper
+│   │   │   ├── crypto.ts                        # Cryptographic helpers
+│   │   │   ├── jwt.ts                            # JWT helper functions
+│   │   │   ├── password.ts                      # Password hashing/comparison
+│   │   │   ├── date.ts                           # Date/time utilities
+│   │   │   │
+│   │   │   └── Mail/                            # Email infrastructure
+│   │   │       ├── mail.service.ts              # Email sending service
+│   │   │       ├── mail.templates.ts             # Email templates
+│   │   │       └── mail.types.ts                # Email TypeScript types
 │   │   │
-│   │   ├── utils/                       # Utility functions
+│   │   ├── jobs/                                # Background/scheduled jobs
+│   │   │   ├── trustPeriod.job.ts               # 7-day trust-period processing
+│   │   │   ├── notification.job.ts              # Background notification processing
+│   │   │   └── cleanup.job.ts                   # Cleanup/expired data processing
 │   │   │
-│   │   ├── app.ts                       # Express application
-│   │   └── server.ts                    # Server entry point
+│   │   ├── database/                            # Database infrastructure
+│   │   │   ├── indexes.ts                       # MongoDB indexes
+│   │   │   └── seed.ts                          # Development/test database seed
+│   │   │
+│   │   ├── app.ts                               # Express application configuration
+│   │   └── server.ts                            # HTTP server/bootstrap entry point
 │   │
-│   ├── .env                             # Backend environment variables
-│   ├── tsconfig.json                    # TypeScript configuration
-│   └── package.json
+│   ├── tests/                                   # Backend test suites
+│   │   ├── unit/                                # Unit tests
+│   │   ├── integration/                         # Integration tests
+│   │   └── e2e/                                 # End-to-end API tests
+│   │
+│   ├── .env                                     # Local environment variables
+│   ├── .env.example                             # Environment variable template
+│   ├── .gitignore                               # Git ignored files
+│   ├── eslint.config.js                         # ESLint configuration
+│   ├── prettier.config.js                       # Prettier configuration
+│   ├── tsconfig.json                            # TypeScript configuration
+│   ├── package.json                             # Dependencies and scripts
+│   ├── package-lock.json                        # Locked dependency versions
+│   └── README.md                                # Backend documentation
 │
-│
-├── .gitignore                           # Git ignored files
-├── .env.example                         # Environment variable template
-├── README.md                            # Project documentation
-└── package.json                         # Root package configuration
+├── .gitignore                                   # Root Git ignored files
+├── .env.example                                 # Root environment template
+├── README.md                                    # After7 project documentation
+└── package.json                                 # Root project configuration
 ```
 
 > The exact directory structure may change as the project grows. The structure above represents the recommended organization for the After7 architecture.
