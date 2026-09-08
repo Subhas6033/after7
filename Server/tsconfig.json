@@ -5,12 +5,15 @@
     "moduleResolution": "NodeNext",
     "rootDir": ".",
     "outDir": "./dist",
+
     "types": ["node"],
-    "allowImportingTsExtensions": true,
-    "noEmit": true,
+
+    "rewriteRelativeImportExtensions": true,
+
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
+
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
     "strict": true,
@@ -18,10 +21,12 @@
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
+
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true
   },
+
   "include": ["**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }

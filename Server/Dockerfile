@@ -59,6 +59,6 @@ COPY \
     /app/package.json \
     ./package.json
 
-EXPOSE 5000
+EXPOSE 6866
 
 CMD ["node", "dist/server.js"]

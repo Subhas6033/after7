@@ -1,19 +1,17 @@
 services:
   server:
-    image: ${SERVER_IMAGE:-after7-server:latest}
-
+    build:
+      context: ../../Server
+      dockerfile: Dockerfile
+    image: after7-server:dev
     container_name: after7-server
-
     restart: unless-stopped
 
     env_file:
-      - /opt/after7/env/server.env
+      - ../../Server/.env
 
     ports:
       - "6866:6866"
-
-    networks:
-      - after7-network
 
     healthcheck:
       test:
@@ -23,19 +21,22 @@ services:
           "--no-verbose",
           "--tries=1",
           "--spider",
-          "http://127.0.0.1:6866/health",
+          "http://127.0.0.1:6866/health"
         ]
-
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 20s
 
+    networks:
+      - after7-network
+
   client:
-    image: ${CLIENT_IMAGE:-after7-client:latest}
-
+    build:
+      context: ../../Client
+      dockerfile: Dockerfile
+    image: after7-client:dev
     container_name: after7-client
-
     restart: unless-stopped
 
     ports:
