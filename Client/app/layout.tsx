@@ -4,7 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 
 import "./globals.css";
 
-import { Navbar } from "@/components/custom/nav";
+import { Navbar } from "@/components/custom/navigations/nav";
 import { Footer } from "@/components/custom/footer";
 import { SEO } from "@/components/custom/seo";
 
