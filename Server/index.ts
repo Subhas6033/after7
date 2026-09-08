@@ -8,6 +8,7 @@ import {
   asyncHandler,
   errorHandler,
 } from "./src/utils/helper.utils.ts";
+import { success } from "zod";
 
 export const app = express();
 const corsOrigin = process.env.CORS_ORIGIN;
@@ -74,6 +75,15 @@ app.get("/", (_req: Request, res: Response) => {
   const response = new APIRES(200, null, "Welcome to After7");
 
   res.status(response.statusCode).json(response);
+});
+
+// Testing the CI/CD pipeline it will removed later
+app.get("/welcome", (req: Request, res: Response) => {
+  res.json({
+    message: "Hello User Welcome to the after7 server",
+    statusCode: 200,
+    success: true,
+  });
 });
 
 /*
