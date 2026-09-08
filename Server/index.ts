@@ -8,10 +8,10 @@ import {
   asyncHandler,
   errorHandler,
 } from "./src/utils/helper.utils.ts";
-import { success } from "zod";
 
 export const app = express();
-const corsOrigin = process.env.CORS_ORIGIN;
+export default app;
+const corsOrigin = process.env.CORS_ORIGIN!;
 
 if (!corsOrigin) {
   throw new Error(

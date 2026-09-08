@@ -9,6 +9,9 @@ pipeline {
 
     environment {
         REPO_DIR = "/opt/after7/repository"
+
+        NODE_ENV = "test"
+        CORS_ORIGIN = "http://localhost:3000"
     }
 
     stages {
@@ -23,10 +26,73 @@ pipeline {
                     cd ${REPO_DIR}
 
                     git fetch origin
-
                     git checkout main
-
                     git reset --hard origin/main
+                    git clean -fd
+                """
+            }
+        }
+
+
+        stage("Install Dependencies") {
+
+            steps {
+
+                sh """
+                    set -e
+
+                    cd ${REPO_DIR}
+
+                    npm ci
+
+                    cd Server
+
+                    npm ci
+                """
+            }
+        }
+
+
+        stage("Unit Tests") {
+
+            steps {
+
+                sh """
+                    set -e
+
+                    cd ${REPO_DIR}
+
+                    npm run test:unit
+                """
+            }
+        }
+
+
+        stage("Integration Tests") {
+
+            steps {
+
+                sh """
+                    set -e
+
+                    cd ${REPO_DIR}
+
+                    npm run test:integration
+                """
+            }
+        }
+
+
+        stage("Build Backend") {
+
+            steps {
+
+                sh """
+                    set -e
+
+                    cd ${REPO_DIR}/Server
+
+                    npm run build
                 """
             }
         }
@@ -37,6 +103,8 @@ pipeline {
             steps {
 
                 sh """
+                    set -e
+
                     chmod +x \
                         ${REPO_DIR}/jenkins/scripts/deploy-backend.sh
 
@@ -51,12 +119,25 @@ pipeline {
             steps {
 
                 sh """
+                    set -e
+
                     chmod +x \
                         ${REPO_DIR}/jenkins/scripts/health-check.sh
 
                     ${REPO_DIR}/jenkins/scripts/health-check.sh
                 """
             }
+        }
+    }
+
+    post {
+
+        success {
+            echo "Backend CI/CD completed successfully."
+        }
+
+        failure {
+            echo "Backend CI/CD failed. Deployment was blocked."
         }
     }
 }

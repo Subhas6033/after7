@@ -1,72 +1,567 @@
 pipeline {
 
+    /*
+     * Jenkins executes this pipeline on any available Jenkins agent.
+     *
+     * IMPORTANT:
+     * The agent must have the following tools available:
+     *
+     * - Git
+     * - Node.js / npm
+     * - Docker
+     * - Docker Compose
+     * - curl
+     *
+     * The production deployment stages intentionally appear AFTER
+     * all automated quality gates.
+     *
+     * Pipeline flow:
+     *
+     *     Checkout
+     *        ↓
+     *     Install dependencies
+     *        ↓
+     *     Unit tests
+     *        ↓
+     *     Integration tests
+     *        ↓
+     *     Backend build
+     *        ↓
+     *     Frontend build
+     *        ↓
+     *     Detect changed applications
+     *        ↓
+     *     Deploy changed applications
+     *        ↓
+     *     Production health check
+     *
+     * If any test or build fails, Jenkins stops the pipeline and
+     * deployment stages are never executed.
+     */
+
     agent any
 
+
+    /*
+     * Pipeline-wide execution policies.
+     */
     options {
+
+        /*
+         * Adds timestamps to Jenkins console output.
+         *
+         * This makes production troubleshooting easier because
+         * every command can be correlated with a specific time.
+         */
         timestamps()
+
+
+        /*
+         * Prevents two production deployments from running at the
+         * same time.
+         *
+         * This is especially important because both deployments
+         * modify Docker containers and production resources.
+         */
         disableConcurrentBuilds()
+
+
+        /*
+         * Prevent Jenkins from automatically performing its own
+         * SCM checkout.
+         *
+         * Checkout is handled explicitly below so that the pipeline
+         * has complete control over which repository state is deployed.
+         */
+        skipDefaultCheckout(true)
+
+
+        /*
+         * Prevent an interrupted Jenkins build from being resumed
+         * automatically.
+         *
+         * A production deployment should always start from a clean,
+         * explicitly checked-out commit rather than continuing an
+         * interrupted deployment stage.
+         */
+        disableResume()
+
+
+        /*
+         * Prevent a broken or hanging build from consuming a Jenkins
+         * executor indefinitely.
+         *
+         * Adjust this value according to the actual build duration
+         * of the project.
+         */
+        timeout(
+            time: 30,
+            unit: "MINUTES"
+        )
+
+
+        /*
+         * If stages are later converted to parallel execution,
+         * fail all parallel branches when one branch fails.
+         *
+         * This prevents unnecessary work after a critical failure.
+         */
+        parallelsAlwaysFailFast()
     }
 
+
+    /*
+     * Environment variables shared by all pipeline stages.
+     *
+     * IMPORTANT:
+     * Do not store passwords, API keys, MongoDB credentials,
+     * JWT secrets, or other sensitive values here.
+     *
+     * Secrets should be injected through Jenkins Credentials.
+     */
     environment {
+
+        /*
+         * Root directory used by the After7 deployment environment.
+         */
         APP_DIR = "/opt/after7"
+
+
+        /*
+         * Location of the checked-out production repository.
+         */
         REPO_DIR = "/opt/after7/repository"
+
+
+        /*
+         * Test environment identifier.
+         *
+         * This allows application code to distinguish CI/test
+         * execution from production execution.
+         */
+        NODE_ENV = "test"
+
+
+        /*
+         * CORS origin required by the Express application.
+         *
+         * This value must be available while the integration tests
+         * import the Express application.
+         */
+        CORS_ORIGIN = "http://localhost:3000"
     }
+
 
     stages {
 
+
+        /*
+         * ============================================================
+         * CHECKOUT
+         * ============================================================
+         *
+         * Purpose:
+         *
+         * Obtain exactly the latest state of origin/main.
+         *
+         * The deployment server keeps a working copy of the repository,
+         * therefore the working tree is explicitly synchronized with
+         * the remote branch.
+         */
         stage("Checkout") {
 
             steps {
 
-                echo "Pulling latest After7 changes..."
+                echo "========================================"
+                echo "Checking out latest After7 changes"
+                echo "========================================"
 
                 sh """
-                    set -e
+                    set -eu
 
-                    cd ${REPO_DIR}
+                    cd "${REPO_DIR}"
 
+                    /*
+                     * Retrieve the latest remote repository metadata.
+                     */
                     git fetch origin
 
+                    /*
+                     * Ensure Jenkins is operating on the production
+                     * branch.
+                     */
                     git checkout main
 
+                    /*
+                     * Make the working tree exactly match origin/main.
+                     *
+                     * This prevents locally modified files from
+                     * accidentally being included in a deployment.
+                     */
                     git reset --hard origin/main
+
+                    /*
+                     * Remove untracked files and directories.
+                     *
+                     * This keeps the deployment workspace deterministic.
+                     */
+                    git clean -fd
                 """
             }
         }
 
 
+        /*
+         * ============================================================
+         * INSTALL ROOT TEST DEPENDENCIES
+         * ============================================================
+         *
+         * The root package.json contains the Vitest/Supertest testing
+         * infrastructure.
+         *
+         * npm ci is deliberately used instead of npm install.
+         *
+         * npm ci:
+         *
+         * - Uses package-lock.json exactly.
+         * - Produces deterministic installations.
+         * - Removes the existing node_modules before installation.
+         * - Is intended for CI/CD environments.
+         */
+        stage("Install Test Dependencies") {
+
+            steps {
+
+                echo "Installing root test dependencies..."
+
+                sh """
+                    set -eu
+
+                    cd "${REPO_DIR}"
+
+                    npm ci
+                """
+            }
+        }
+
+
+        /*
+         * ============================================================
+         * INSTALL BACKEND DEPENDENCIES
+         * ============================================================
+         *
+         * The backend has its own package.json and package-lock.json.
+         *
+         * Keeping backend dependencies isolated prevents the root
+         * testing environment from accidentally becoming the runtime
+         * dependency environment of the Express application.
+         */
+        stage("Install Backend Dependencies") {
+
+            steps {
+
+                echo "Installing backend dependencies..."
+
+                sh """
+                    set -eu
+
+                    cd "${REPO_DIR}/Server"
+
+                    npm ci
+                """
+            }
+        }
+
+
+        /*
+         * ============================================================
+         * INSTALL FRONTEND DEPENDENCIES
+         * ============================================================
+         *
+         * The Next.js frontend maintains its own dependency tree.
+         *
+         * npm ci ensures the frontend build uses exactly the versions
+         * committed to Client/package-lock.json.
+         */
+        stage("Install Frontend Dependencies") {
+
+            steps {
+
+                echo "Installing frontend dependencies..."
+
+                sh """
+                    set -eu
+
+                    cd "${REPO_DIR}/Client"
+
+                    npm ci
+                """
+            }
+        }
+
+
+        /*
+         * ============================================================
+         * UNIT TESTS
+         * ============================================================
+         *
+         * UNIT TESTS ARE A DEPLOYMENT GATE.
+         *
+         * These tests should validate isolated business logic such as:
+         *
+         * - Validation
+         * - Mappers
+         * - Utility functions
+         * - Authentication logic
+         * - Service-level logic
+         *
+         * If a unit test fails:
+         *
+         *     Jenkins marks the build as FAILED.
+         *
+         *     No deployment stage is executed.
+         *
+         * This is intentional.
+         */
+        stage("Unit Tests") {
+
+            steps {
+
+                echo "========================================"
+                echo "Running unit tests"
+                echo "========================================"
+
+                sh """
+                    set -eu
+
+                    cd "${REPO_DIR}"
+
+                    npm run test:unit
+                """
+            }
+        }
+
+
+        /*
+         * ============================================================
+         * INTEGRATION TESTS
+         * ============================================================
+         *
+         * INTEGRATION TESTS ARE A DEPLOYMENT GATE.
+         *
+         * These tests verify that multiple application components
+         * work together correctly.
+         *
+         * For example:
+         *
+         *     Supertest
+         *          ↓
+         *       Express
+         *          ↓
+         *      Middleware
+         *          ↓
+         *        Routes
+         *          ↓
+         *      Controllers
+         *
+         * The current health endpoint test is an appropriate starting
+         * point for this layer.
+         *
+         * IMPORTANT:
+         *
+         * Tests should import "app" from Server/index.ts rather than
+         * starting Server/server.ts.
+         *
+         * This prevents the test suite from starting a real HTTP
+         * server or connecting to production infrastructure.
+         *
+         * If integration tests fail, deployment is blocked.
+         */
+        stage("Integration Tests") {
+
+            steps {
+
+                echo "========================================"
+                echo "Running integration tests"
+                echo "========================================"
+
+                sh """
+                    set -eu
+
+                    cd "${REPO_DIR}"
+
+                    npm run test:integration
+                """
+            }
+        }
+
+
+        /*
+         * ============================================================
+         * BACKEND BUILD
+         * ============================================================
+         *
+         * The backend must compile successfully before deployment.
+         *
+         * This catches TypeScript errors that unit/integration tests
+         * may not necessarily execute.
+         *
+         * Examples:
+         *
+         * - Type errors
+         * - Invalid imports
+         * - Missing modules
+         * - Compilation errors
+         *
+         * A failed build is a hard deployment gate.
+         */
+        stage("Build Backend") {
+
+            steps {
+
+                echo "========================================"
+                echo "Building backend"
+                echo "========================================"
+
+                sh """
+                    set -eu
+
+                    cd "${REPO_DIR}/Server"
+
+                    npm run build
+                """
+            }
+        }
+
+
+        /*
+         * ============================================================
+         * FRONTEND BUILD
+         * ============================================================
+         *
+         * The Next.js application must successfully compile before
+         * production deployment.
+         *
+         * This catches problems such as:
+         *
+         * - TypeScript errors
+         * - Invalid imports
+         * - Next.js compilation errors
+         * - Invalid application configuration
+         * - Build-time rendering errors
+         *
+         * A failed frontend build prevents production deployment.
+         */
+        stage("Build Frontend") {
+
+            steps {
+
+                echo "========================================"
+                echo "Building frontend"
+                echo "========================================"
+
+                sh """
+                    set -eu
+
+                    cd "${REPO_DIR}/Client"
+
+                    npm run build
+                """
+            }
+        }
+
+
+        /*
+         * ============================================================
+         * DETECT CHANGES
+         * ============================================================
+         *
+         * At this point:
+         *
+         *     Unit tests       ✓
+         *     Integration     ✓
+         *     Backend build   ✓
+         *     Frontend build  ✓
+         *
+         * Only now do we determine which application changed.
+         *
+         * This prevents unnecessary deployments.
+         *
+         * Examples:
+         *
+         * Server change only:
+         *
+         *     Backend  → deploy
+         *     Frontend → skip
+         *
+         * Client change only:
+         *
+         *     Backend  → skip
+         *     Frontend → deploy
+         *
+         * Both changed:
+         *
+         *     Backend  → deploy
+         *     Frontend → deploy
+         */
         stage("Detect Changes") {
 
             steps {
 
                 script {
 
+                    /*
+                     * Compare the previous commit with the current
+                     * checked-out commit.
+                     */
                     def changes = sh(
                         script: """
-                            cd ${REPO_DIR}
+                            set -eu
 
-                            git diff \
-                            HEAD~1 HEAD \
-                            --name-only
+                            cd "${REPO_DIR}"
+
+                            git diff HEAD~1 HEAD --name-only
                         """,
                         returnStdout: true
                     ).trim()
 
-                    env.FRONTEND_CHANGED =
-                        changes.split("\\n")
-                        .any {
-                            it.startsWith("Client/")
-                        }
-                        ? "true"
-                        : "false"
 
+                    echo "========================================"
+                    echo "Changed files"
+                    echo "========================================"
+
+                    echo changes
+
+
+                    /*
+                     * Convert the output into an array.
+                     *
+                     * An empty change set is handled safely.
+                     */
+                    def changedFiles = changes
+                        ? changes.split("\\n")
+                        : []
+
+
+                    /*
+                     * Determine whether anything under Client/
+                     * changed.
+                     */
+                    env.FRONTEND_CHANGED =
+                        changedFiles.any {
+                            it.startsWith("Client/")
+                        } ? "true" : "false"
+
+
+                    /*
+                     * Determine whether anything under Server/
+                     * changed.
+                     */
                     env.BACKEND_CHANGED =
-                        changes.split("\\n")
-                        .any {
+                        changedFiles.any {
                             it.startsWith("Server/")
-                        }
-                        ? "true"
-                        : "false"
+                        } ? "true" : "false"
+
 
                     echo "Frontend changed: ${env.FRONTEND_CHANGED}"
                     echo "Backend changed: ${env.BACKEND_CHANGED}"
@@ -75,77 +570,252 @@ pipeline {
         }
 
 
+        /*
+         * ============================================================
+         * DEPLOY FRONTEND
+         * ============================================================
+         *
+         * DEPLOYMENT GATE:
+         *
+         * This stage can only execute when:
+         *
+         * 1. Jenkins is building main.
+         * 2. Client/ contains changes.
+         * 3. Every previous quality gate has passed.
+         *
+         * Jenkins automatically prevents this stage from executing
+         * when a previous stage fails.
+         */
         stage("Deploy Frontend") {
 
             when {
-                environment {
-                    name: "FRONTEND_CHANGED"
-                    value: "true"
+
+                allOf {
+
+                    /*
+                     * Production deployment is permitted only from
+                     * the main branch.
+                     */
+                    branch "main"
+
+
+                    /*
+                     * Deploy only when frontend files changed.
+                     */
+                    environment {
+                        name: "FRONTEND_CHANGED"
+                        value: "true"
+                    }
                 }
             }
 
             steps {
 
+                echo "========================================"
+                echo "Deploying After7 frontend"
+                echo "========================================"
+
                 sh """
-                    set -e
+                    set -eu
 
                     chmod +x \
-                        ${REPO_DIR}/jenkins/scripts/deploy-frontend.sh
+                        "${REPO_DIR}/jenkins/scripts/deploy-frontend.sh"
 
-                    ${REPO_DIR}/jenkins/scripts/deploy-frontend.sh
+                    "${REPO_DIR}/jenkins/scripts/deploy-frontend.sh"
                 """
             }
         }
 
 
+        /*
+         * ============================================================
+         * DEPLOY BACKEND
+         * ============================================================
+         *
+         * DEPLOYMENT GATE:
+         *
+         * This stage can only execute when:
+         *
+         * 1. Jenkins is building main.
+         * 2. Server/ contains changes.
+         * 3. Unit tests passed.
+         * 4. Integration tests passed.
+         * 5. Backend build passed.
+         * 6. Frontend build passed.
+         *
+         * If any quality gate fails, Jenkins never reaches this stage.
+         */
         stage("Deploy Backend") {
 
             when {
-                environment {
-                    name: "BACKEND_CHANGED"
-                    value: "true"
+
+                allOf {
+
+                    /*
+                     * Production deployment is permitted only from
+                     * the main branch.
+                     */
+                    branch "main"
+
+
+                    /*
+                     * Deploy only when backend files changed.
+                     */
+                    environment {
+                        name: "BACKEND_CHANGED"
+                        value: "true"
+                    }
                 }
             }
 
             steps {
 
+                echo "========================================"
+                echo "Deploying After7 backend"
+                echo "========================================"
+
                 sh """
-                    set -e
+                    set -eu
 
                     chmod +x \
-                        ${REPO_DIR}/jenkins/scripts/deploy-backend.sh
+                        "${REPO_DIR}/jenkins/scripts/deploy-backend.sh"
 
-                    ${REPO_DIR}/jenkins/scripts/deploy-backend.sh
+                    "${REPO_DIR}/jenkins/scripts/deploy-backend.sh"
                 """
             }
         }
 
 
+        /*
+         * ============================================================
+         * PRODUCTION HEALTH CHECK
+         * ============================================================
+         *
+         * This stage executes after deployment.
+         *
+         * It verifies that the production services are responding
+         * after the deployment operation.
+         *
+         * Current checks:
+         *
+         *     Backend  → HTTP /health
+         *     Frontend → HTTP /
+         *
+         * Future health checks should verify deeper dependencies,
+         * such as:
+         *
+         *     MongoDB
+         *     Redis
+         *     Message queues
+         *     Storage
+         *     Required external services
+         *
+         * A failed health check causes the Jenkins build to fail.
+         *
+         * IMPORTANT:
+         *
+         * Health checks confirm whether the deployment is healthy.
+         * They do not replace unit or integration tests.
+         */
         stage("Health Check") {
+
+            when {
+
+                /*
+                 * Only the production main pipeline performs
+                 * production health verification.
+                 */
+                branch "main"
+            }
 
             steps {
 
+                echo "========================================"
+                echo "Running production health checks"
+                echo "========================================"
+
                 sh """
-                    set -e
+                    set -eu
 
                     chmod +x \
-                        ${REPO_DIR}/jenkins/scripts/health-check.sh
+                        "${REPO_DIR}/jenkins/scripts/health-check.sh"
 
-                    ${REPO_DIR}/jenkins/scripts/health-check.sh
+                    "${REPO_DIR}/jenkins/scripts/health-check.sh"
                 """
             }
         }
     }
 
 
+    /*
+     * ================================================================
+     * PIPELINE RESULT HANDLING
+     * ================================================================
+     *
+     * Jenkins executes these blocks after the stages finish.
+     *
+     * success:
+     *     All required stages completed successfully.
+     *
+     * failure:
+     *     At least one stage failed.
+     *
+     * always:
+     *     Executes regardless of the final pipeline status.
+     */
     post {
 
         success {
-            echo "After7 deployment completed successfully."
+
+            echo """
+            ========================================
+            AFTER7 CI/CD SUCCESS
+            ========================================
+
+            Checkout                 : PASSED
+            Unit tests               : PASSED
+            Integration tests        : PASSED
+            Backend build            : PASSED
+            Frontend build           : PASSED
+            Deployment               : PASSED
+            Production health check  : PASSED
+
+            After7 production deployment completed
+            successfully.
+
+            ========================================
+            """
         }
 
+
         failure {
-            echo "After7 deployment failed."
+
+            echo """
+            ========================================
+            AFTER7 CI/CD FAILED
+            ========================================
+
+            One or more pipeline stages failed.
+
+            Production deployment was either:
+
+            - Blocked by a failed quality gate, OR
+            - Failed during deployment, OR
+            - Failed during the production health check.
+
+            Review the failed Jenkins stage before
+            attempting another deployment.
+
+            ========================================
+            """
+        }
+
+
+        always {
+
+            echo "========================================"
+            echo "After7 CI/CD pipeline finished"
+            echo "========================================"
         }
     }
 }

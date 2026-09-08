@@ -1,0 +1,34 @@
+{
+  "name": "after7",
+  "version": "1.0.0",
+  "description": "> A youth-focused social platform for authentic connections, anonymous Q&A, and secure real-time communication.",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:unit": "vitest run tests/unit",
+    "test:integration": "vitest run tests/integration",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Subhas6033/after7.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Subhas6033/after7/issues"
+  },
+  "homepage": "https://github.com/Subhas6033/after7#readme",
+  "devDependencies": {
+    "@types/node": "^26.5.0",
+    "@types/supertest": "^7.2.1",
+    "@vitest/coverage-v8": "^5.0.0",
+    "supertest": "^7.2.2",
+    "vitest": "^5.0.0"
+  }
+}

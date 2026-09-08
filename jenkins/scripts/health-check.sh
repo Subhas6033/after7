@@ -10,7 +10,7 @@ curl \
     --fail \
     --silent \
     --show-error \
-    http://localhost:5000/health
+    http://localhost:6866/health
 
 echo ""
 
