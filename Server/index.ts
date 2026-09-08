@@ -77,15 +77,6 @@ app.get("/", (_req: Request, res: Response) => {
   res.status(response.statusCode).json(response);
 });
 
-// Testing the CI/CD pipeline it will removed later
-app.get("/ci-cd", (req: Request, res: Response) => {
-  res.json({
-    message: "CI/CD is working on productions",
-    statusCode: 200,
-    success: true,
-  });
-});
-
 /*
   Application health endpoint.
  
