@@ -104,7 +104,8 @@ export function ProfileCard(): React.JSX.Element {
         </p>
 
         <p className="mt-2 text-sm leading-6 text-white/80">
-          "What is something you wish more people understood about you?"
+          &quot;What is something you wish more people understood about
+          you?&quot;
         </p>
       </div>
 

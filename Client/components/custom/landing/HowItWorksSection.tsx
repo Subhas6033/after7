@@ -42,7 +42,7 @@ export function HowItWorksSection(): React.JSX.Element {
           <h2 className="mx-auto mt-3 max-w-xl text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">
             People are complicated.
             <br />
-            Meeting them shouldn't be.
+            Meeting them shouldn&apos;t be.
           </h2>
         </div>
       </FadeIn>
