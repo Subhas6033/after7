@@ -61,8 +61,9 @@ export function JourneySection(): React.JSX.Element {
             </h2>
 
             <p className="mt-5 max-w-md text-sm leading-7 text-white/40">
-              After7 isn't designed to maximize the number of people you meet.
-              It's designed to give one good conversation enough room to grow.
+              After7 isn&apos;t designed to maximize the number of people you
+              meet. It&apos;t designed to give one good conversation enough room
+              to grow.
             </p>
           </div>
         </FadeIn>
