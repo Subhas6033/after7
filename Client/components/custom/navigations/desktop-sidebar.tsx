@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { UserRound } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
@@ -56,8 +55,8 @@ function Brand() {
         aria-label="After7 home"
         className="flex items-center gap-2.5"
       >
-        <span className="flex size-7 items-center justify-center rounded-md bg-after7-accent text-after7-accent-foreground">
-          <span className="text-sm font-black">7</span>
+        <span className="flex size-7 items-center justify-center corner-squircle bg-after7-accent text-after7-accent-foreground">
+          <span>7</span>
         </span>
 
         <span className="hidden text-[15px] font-semibold tracking-tight lg:inline">
