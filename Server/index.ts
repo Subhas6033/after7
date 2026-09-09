@@ -2,6 +2,7 @@ import express from "express";
 import type { NextFunction, Request, Response } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import helmet from "helmet";
 import {
   APIERR,
   APIRES,
@@ -64,6 +65,18 @@ app.use(
   Parse cookies from incoming HTTP requests.
  */
 app.use(cookieParser());
+
+/*
+  Disable Express fingerprinting.
+  Prevents the `X-Powered-By: Express` response header.
+*/
+app.disable("x-powered-by");
+
+/*
+ Adds various security-related HTTP headers.
+ Includes protections such as CSP, HSTS, X-Content-Type-Options, etc.
+*/
+app.use(helmet());
 
 /*
   Basic application endpoint.
