@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
-
 import "./globals.css";
-
-import { Navbar } from "@/components/custom/navigations/nav";
-import { Footer } from "@/components/custom/footer";
+import { SiteChrome } from "@/components/custom/site-chrome";
 import { SEO } from "@/components/custom/seo";
 
 const geistSans = Geist({
@@ -81,6 +78,7 @@ export const metadata: Metadata = {
 
   alternates: {
     canonical: "https://after7-app.vercel.app",
+
     languages: {
       "en-US": "https://after7-app.vercel.app",
       en: "https://after7-app.vercel.app",
@@ -129,9 +127,7 @@ export const metadata: Metadata = {
   },
 
   verification: {
-    // Replace this with your real Google Search Console verification code.
     google: "google-site-verification-code",
-    // yandex: "yandex-verification-code",
   },
 
   category: "Social Networking",
@@ -200,7 +196,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
-        {/* Structured Data / JSON-LD */}
+        {/* Structured Data */}
         <SEO />
 
         {/* Performance */}
@@ -221,7 +217,6 @@ export default function RootLayout({
         <meta name="language" content="English" />
         <meta name="revisit-after" content="7 days" />
         <meta name="distribution" content="global" />
-        {/* Color scheme */}
         <meta name="color-scheme" content="light dark" />
         {/* Favicon */}
         <link rel="icon" href="/favicon.ico" sizes="any" />
@@ -229,11 +224,7 @@ export default function RootLayout({
       </head>
 
       <body className="min-h-full flex flex-col">
-        <Navbar />
-
-        <main className="flex-1">{children}</main>
-
-        <Footer />
+        <SiteChrome>{children}</SiteChrome>
       </body>
     </html>
   );
