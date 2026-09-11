@@ -1,14 +1,19 @@
 "use client";
+
+import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+
 import { useSignup } from "@/context/auth";
 import { useCompleteSignup } from "@/data/modules/auth/use-complete-signup";
+
 import { SignupDetails } from "./signup-details";
 import { SignupInterests } from "./signup-interests";
-import { useState } from "react";
 
 export function SignupFlow() {
   const [step, setStep] = useState(1);
+
   const { data, updateData, isStepOneComplete, isComplete } = useSignup();
+
   const { submit, isPending, isSuccess, isError, error } = useCompleteSignup();
 
   const handleContinue = () => {

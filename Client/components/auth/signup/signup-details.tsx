@@ -2,7 +2,7 @@
 import { CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { SignupData } from "./signup-flow";
+import type { SignupData } from "@/context/auth";
 import {
   AuthHeader,
   AuthTitle,
@@ -72,7 +72,11 @@ export function SignupDetails({
         <AuthField label="Password">
           <PasswordField
             value={data.password}
-            onChange={(password) => onChange({ password })}
+            onChange={(password) =>
+              onChange({
+                password,
+              })
+            }
             autoComplete="new-password"
           />
         </AuthField>
@@ -95,8 +99,8 @@ export function SignupDetails({
         </AuthField>
 
         <ProfilePhotoPicker
-          photo={data.profilePhoto ?? null}
-          avatar={data.profileAvatar ?? null}
+          photo={data.profilePhoto}
+          avatar={data.profileAvatar}
           onPhotoChange={(profilePhoto) =>
             onChange({
               profilePhoto,
