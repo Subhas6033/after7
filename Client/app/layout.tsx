@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SiteChrome } from "@/components/custom/site-chrome";
 import { SEO } from "@/components/custom/seo";
+import { AppProviders } from "@/providers/AppProviders";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -123,6 +124,7 @@ export const metadata: Metadata = {
       "Privacy-focused social platform. Meet people through random matching, share anonymous questions, chat securely, and build genuine connections.",
 
     images: ["/og-image.png"],
+
     creator: "@After7",
   },
 
@@ -196,35 +198,30 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
-        {/* Structured Data */}
         <SEO />
-
-        {/* Performance */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
           href="https://fonts.gstatic.com"
           crossOrigin="anonymous"
         />
-        {/* Social image metadata */}
         <meta property="og:image:alt" content="After7 Social Platform" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
-        {/* Security */}
         <meta httpEquiv="X-UA-Compatible" content="ie=edge" />
         <meta name="referrer" content="strict-origin-when-cross-origin" />
-        {/* Additional metadata */}
         <meta name="language" content="English" />
         <meta name="revisit-after" content="7 days" />
         <meta name="distribution" content="global" />
         <meta name="color-scheme" content="light dark" />
-        {/* Favicon */}
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
       </head>
 
       <body className="min-h-full flex flex-col">
-        <SiteChrome>{children}</SiteChrome>
+        <AppProviders>
+          <SiteChrome>{children}</SiteChrome>
+        </AppProviders>
       </body>
     </html>
   );

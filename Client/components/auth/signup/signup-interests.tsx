@@ -1,23 +1,27 @@
 "use client";
 import { ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
+import { fadeIn, fadeInUp, scaleIn, staggerFast } from "@/animation";
 import { Button } from "@/components/ui/button";
-import type { SignupData } from "./signup-flow";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import type { SignupData } from "@/context/auth";
 
 type SignupInterestsProps = {
   data: SignupData;
   onChange: (data: Partial<SignupData>) => void;
   onBack: () => void;
   onFinish: () => void;
+  isPending?: boolean;
 };
 
-/*
-  Reuse the type from SignupData instead of creating
-  another separate type that could get out of sync.
- */
-type MeetPreference = NonNullable<SignupData["meetPreference"]>;
+type MeetPreference = SignupData["meetPreference"];
 
-// TODO: Make this interest + meet options + availability from admin
 const INTERESTS = [
   "Music",
   "Art",
@@ -46,37 +50,27 @@ const MEET_OPTIONS: {
     label: "Anyone",
   },
   {
-    value: "similar-age",
-    label: "Similar age range",
-  },
-  {
-    value: "specific",
-    label: "Specific preferences",
+    value: "similar-age & gender",
+    label: "Similar age range & opposite gender",
   },
 ];
 
-const AVAILABILITY = [
-  "Mornings",
-  "Afternoons",
-  "Evenings",
-  "Weekends",
-] as const;
+const GENDER = ["Male", "Female", "Others"] as const;
+
+type Gender = (typeof GENDER)[number];
 
 export function SignupInterests({
   data,
   onChange,
   onBack,
   onFinish,
+  isPending = false,
 }: SignupInterestsProps) {
-  const selectedInterests = data.interests ?? [];
+  const selectedInterests = data.interests;
+  const selectedMeetPreference = data.meetPreference;
+  const selectedGender = data.gender;
 
-  const selectedMeetPreference: MeetPreference =
-    data.meetPreference ?? "similar-age";
-
-  const selectedAvailability = data.availability ?? [];
-
-  // Toggle the interests
-  const toggleInterest = (interest: string) => {
+  const toggleInterest = (interest: (typeof INTERESTS)[number]) => {
     const exists = selectedInterests.includes(interest);
 
     const next = exists
@@ -88,70 +82,80 @@ export function SignupInterests({
     });
   };
 
-  /*
-    Change the "Who do you want to meet?" option.
-    Important:
-    value is MeetPreference, not string.
-   */
   const setMeetPreference = (value: MeetPreference) => {
     onChange({
       meetPreference: value,
     });
   };
 
-  // Toggle availability
-  const toggleAvailability = (value: string) => {
-    const exists = selectedAvailability.includes(value);
+  const setGender = (value: string | null) => {
+    if (value !== "Male" && value !== "Female" && value !== "Others") {
+      return;
+    }
 
-    const next = exists
-      ? selectedAvailability.filter((item) => item !== value)
-      : [...selectedAvailability, value];
+    const gender: Gender = value;
 
     onChange({
-      availability: next,
+      gender,
     });
   };
 
   return (
     <section className="mx-auto w-full max-w-97.5">
-      {/* Header */}
       <SignupHeader onBack={onBack} />
 
-      {/* Title */}
       <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.25 }}
+        variants={fadeInUp}
+        initial="hidden"
+        animate="visible"
+        transition={{
+          delay: 0.05,
+        }}
         className="mt-7"
       >
         <h1 className="text-[24px] font-semibold leading-tight tracking-tight">
           What are you into?
         </h1>
 
-        <p className="mt-2 max-w-87.5 text-[15px] leading-5 text-after7-text-muted">
+        <motion.p
+          variants={fadeIn}
+          initial="hidden"
+          animate="visible"
+          transition={{
+            delay: 0.18,
+          }}
+          className="mt-2 max-w-87.5 text-[15px] leading-5 text-after7-text-muted"
+        >
           Pick a few interests — this helps us find
           <br />
           people you&apos;ll click with.
-        </p>
+        </motion.p>
       </motion.div>
 
-      {/* Interests */}
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+        variants={fadeInUp}
+        initial="hidden"
+        animate="visible"
         transition={{
-          delay: 0.08,
-          duration: 0.25,
+          delay: 0.12,
         }}
         className="mt-7"
       >
-        <div className="flex flex-wrap gap-x-4 gap-y-3">
+        <h2 className="text-[15px] font-semibold">Interests</h2>
+
+        <motion.div
+          variants={staggerFast}
+          initial="hidden"
+          animate="visible"
+          className="mt-3 flex flex-wrap gap-x-4 gap-y-3"
+        >
           {INTERESTS.map((interest) => {
             const selected = selectedInterests.includes(interest);
 
             return (
-              <button
+              <motion.button
                 key={interest}
+                variants={fadeInUp}
                 type="button"
                 onClick={() => toggleInterest(interest)}
                 aria-pressed={selected}
@@ -161,157 +165,217 @@ export function SignupInterests({
                     ? "font-medium text-after7-accent"
                     : "text-after7-text hover:text-after7-accent",
                 ].join(" ")}
+                whileHover={{
+                  y: -1,
+                }}
+                whileTap={{
+                  scale: 0.96,
+                }}
+                transition={{
+                  duration: 0.15,
+                }}
               >
                 {interest}
-              </button>
+              </motion.button>
             );
           })}
-        </div>
+        </motion.div>
       </motion.div>
 
-      {/* Who do you want to meet? */}
       <motion.div
-        initial={{
-          opacity: 0,
-          y: 6,
-        }}
-        animate={{
-          opacity: 1,
-          y: 0,
-        }}
+        variants={fadeInUp}
+        initial="hidden"
+        animate="visible"
         transition={{
-          delay: 0.12,
-          duration: 0.25,
+          delay: 0.2,
         }}
         className="mt-8"
       >
         <h2 className="text-[15px] font-semibold">Who do you want to meet?</h2>
 
-        <div className="mt-3 space-y-2">
+        <motion.div
+          variants={staggerFast}
+          initial="hidden"
+          animate="visible"
+          className="mt-3 space-y-2"
+        >
           {MEET_OPTIONS.map((option) => {
             const selected = selectedMeetPreference === option.value;
 
             return (
-              <button
+              <motion.button
                 key={option.value}
+                variants={fadeInUp}
                 type="button"
                 onClick={() => setMeetPreference(option.value)}
                 aria-pressed={selected}
                 className={[
-                  "flex h-11 w-full items-center rounded-md border px-3 text-left transition-all",
+                  "flex h-11 w-full items-center rounded-md border px-3 text-left",
+                  "transition-colors",
                   selected
                     ? "border-after7-accent bg-after7-accent/10 text-after7-text"
                     : "border-border bg-after7-surface text-after7-text-muted hover:border-after7-text-subtle",
                 ].join(" ")}
+                whileHover={{
+                  y: -1,
+                }}
+                whileTap={{
+                  scale: 0.985,
+                }}
+                transition={{
+                  duration: 0.15,
+                }}
               >
-                {/* Radio */}
-                <span
+                <motion.span
                   className={[
                     "mr-3 flex size-4 shrink-0 items-center justify-center rounded-full border",
                     selected
                       ? "border-after7-accent"
                       : "border-after7-text-subtle",
                   ].join(" ")}
+                  animate={{
+                    scale: selected ? 1 : 0.96,
+                  }}
+                  transition={{
+                    duration: 0.2,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
                 >
                   {selected && (
-                    <span className="size-2 rounded-full bg-after7-accent" />
+                    <motion.span
+                      initial={{
+                        opacity: 0,
+                        scale: 0.5,
+                      }}
+                      animate={{
+                        opacity: 1,
+                        scale: 1,
+                      }}
+                      transition={{
+                        duration: 0.25,
+                        ease: [0.22, 1, 0.36, 1],
+                      }}
+                      className="size-2 rounded-full bg-after7-accent"
+                    />
                   )}
-                </span>
+                </motion.span>
 
                 <span className="text-[14px]">{option.label}</span>
-              </button>
+              </motion.button>
             );
           })}
-        </div>
+        </motion.div>
       </motion.div>
 
-      {/* Availability */}
       <motion.div
-        initial={{
-          opacity: 0,
-          y: 6,
-        }}
-        animate={{
-          opacity: 1,
-          y: 0,
-        }}
+        variants={fadeInUp}
+        initial="hidden"
+        animate="visible"
         transition={{
-          delay: 0.16,
-          duration: 0.25,
+          delay: 0.28,
         }}
         className="mt-7"
       >
-        <h2 className="text-[15px] font-semibold">Availability</h2>
+        <h2 className="text-[15px] font-semibold">Gender</h2>
 
-        <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2.5">
-          {AVAILABILITY.map((item) => {
-            const selected = selectedAvailability.includes(item);
+        <motion.div
+          variants={scaleIn}
+          initial="hidden"
+          animate="visible"
+          transition={{
+            delay: 0.34,
+          }}
+          className="mt-3"
+        >
+          <Select<string>
+            value={selectedGender === "" ? null : selectedGender}
+            onValueChange={setGender}
+            required
+          >
+            <SelectTrigger className="h-11 w-full border-border bg-after7-surface text-[14px]">
+              <SelectValue placeholder="Select your gender" />
+            </SelectTrigger>
 
-            return (
-              <button
-                key={item}
-                type="button"
-                onClick={() => toggleAvailability(item)}
-                aria-pressed={selected}
-                className={[
-                  "text-[14px] leading-5 transition-colors",
-                  selected
-                    ? "font-medium text-after7-accent"
-                    : "text-after7-text hover:text-after7-accent",
-                ].join(" ")}
-              >
-                {item}
-              </button>
-            );
-          })}
-        </div>
+            <SelectContent>
+              {GENDER.map((item) => (
+                <SelectItem key={item} value={item}>
+                  {item}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </motion.div>
       </motion.div>
 
-      {/* Finish setup */}
       <motion.div
-        initial={{
-          opacity: 0,
-          y: 8,
-        }}
-        animate={{
-          opacity: 1,
-          y: 0,
-        }}
+        variants={fadeInUp}
+        initial="hidden"
+        animate="visible"
         transition={{
-          delay: 0.2,
-          duration: 0.25,
+          delay: 0.38,
         }}
+        className="mt-9"
       >
-        <Button
-          type="button"
-          onClick={onFinish}
-          className="mt-9 h-11 w-full rounded-md bg-after7-accent text-[15px] font-medium text-after7-black transition-colors hover:bg-after7-accent-hover"
+        <motion.div
+          whileHover={{
+            scale: 1.01,
+          }}
+          whileTap={{
+            scale: 0.98,
+          }}
+          transition={{
+            duration: 0.15,
+          }}
         >
-          Finish setup
-        </Button>
+          <Button
+            type="button"
+            onClick={onFinish}
+            disabled={isPending}
+            className="h-11 w-full rounded-md bg-after7-accent text-[15px] font-medium text-after7-black transition-colors hover:bg-after7-accent-hover disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isPending ? "Creating account..." : "Finish setup"}
+          </Button>
+        </motion.div>
       </motion.div>
     </section>
   );
 }
 
-// Step Headers
 function SignupHeader({ onBack }: { onBack: () => void }) {
   return (
-    <div>
+    <motion.div variants={fadeIn} initial="hidden" animate="visible">
       <div className="flex items-center justify-between">
-        <button
+        <motion.button
           type="button"
           onClick={onBack}
           aria-label="Back"
           className="text-after7-text-muted transition-colors hover:text-after7-text"
+          whileHover={{
+            x: -2,
+          }}
+          whileTap={{
+            scale: 0.92,
+          }}
+          transition={{
+            duration: 0.15,
+          }}
         >
           <ArrowLeft className="size-5" />
-        </button>
+        </motion.button>
 
-        <span className="text-[12px] text-after7-text-muted">Step 2 of 2</span>
+        <motion.span
+          variants={fadeIn}
+          initial="hidden"
+          animate="visible"
+          transition={{
+            delay: 0.1,
+          }}
+          className="text-[12px] text-after7-text-muted"
+        >
+          Step 2 of 2
+        </motion.span>
       </div>
 
-      {/* Progress bar */}
       <div className="mt-5 h-0.5 overflow-hidden rounded-full bg-after7-surface">
         <motion.div
           initial={{
@@ -321,12 +385,13 @@ function SignupHeader({ onBack }: { onBack: () => void }) {
             width: "100%",
           }}
           transition={{
-            duration: 0.45,
-            ease: "easeOut",
+            duration: 0.7,
+            delay: 0.1,
+            ease: [0.22, 1, 0.36, 1],
           }}
           className="h-full rounded-full bg-after7-accent"
         />
       </div>
-    </div>
+    </motion.div>
   );
 }
