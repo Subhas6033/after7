@@ -1,4 +1,3 @@
-import React from "react";
 import type { Metadata } from "next";
 import { SignupFlow } from "@/components/auth/signup/signup-flow";
 import {
@@ -21,10 +20,14 @@ export const metadata: Metadata = {
 
   openGraph: {
     title: `Create Your Account | ${SITE_NAME}`,
+
     description:
       "Create your After7 account and start meeting new people through meaningful conversations and genuine connections.",
+
     url: `${SITE_URL}/signup`,
+
     type: "website",
+
     images: [
       {
         url: "/og-image.png",
@@ -37,9 +40,12 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
+
     title: `Create Your Account | ${SITE_NAME}`,
+
     description:
       "Create your After7 account and start building meaningful connections.",
+
     images: ["/og-image.png"],
   },
 
@@ -51,11 +57,16 @@ export const metadata: Metadata = {
 
 const signupPageSchema = {
   "@context": "https://schema.org",
+
   "@type": "WebPage",
+
   name: `Create Your Account | ${SITE_NAME}`,
+
   url: `${SITE_URL}/signup`,
+
   description:
     "Create your After7 account and start meeting new people through meaningful conversations.",
+
   isPartOf: {
     "@type": "WebSite",
     name: SITE_NAME,
