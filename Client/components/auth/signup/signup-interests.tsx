@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
 import type { SignupData } from "@/context/auth";
 
 type SignupInterestsProps = {
@@ -70,6 +71,17 @@ export function SignupInterests({
   const selectedMeetPreference = data.meetPreference;
   const selectedGender = data.gender;
 
+  /*
+    Step 2 is complete only when:
+    - At least one interest is selected
+    - A meet preference is selected
+    - A gender is selected
+   */
+  const canFinish =
+    selectedInterests.length > 0 &&
+    Boolean(selectedMeetPreference) &&
+    selectedGender !== "";
+
   const toggleInterest = (interest: (typeof INTERESTS)[number]) => {
     const exists = selectedInterests.includes(interest);
 
@@ -98,6 +110,14 @@ export function SignupInterests({
     onChange({
       gender,
     });
+  };
+
+  const handleFinish = () => {
+    if (!canFinish || isPending) {
+      return;
+    }
+
+    onFinish();
   };
 
   return (
@@ -132,6 +152,7 @@ export function SignupInterests({
         </motion.p>
       </motion.div>
 
+      {/* Interests */}
       <motion.div
         variants={fadeInUp}
         initial="hidden"
@@ -141,7 +162,14 @@ export function SignupInterests({
         }}
         className="mt-7"
       >
-        <h2 className="text-[15px] font-semibold">Interests</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-[15px] font-semibold">
+            Interests{" "}
+            <span className="text-after7-accent" aria-hidden="true">
+              *
+            </span>
+          </h2>
+        </div>
 
         <motion.div
           variants={staggerFast}
@@ -180,8 +208,15 @@ export function SignupInterests({
             );
           })}
         </motion.div>
+
+        {selectedInterests.length === 0 && (
+          <p className="mt-3 text-xs text-after7-text-muted">
+            Select at least one interest.
+          </p>
+        )}
       </motion.div>
 
+      {/* Meet preference */}
       <motion.div
         variants={fadeInUp}
         initial="hidden"
@@ -191,7 +226,14 @@ export function SignupInterests({
         }}
         className="mt-8"
       >
-        <h2 className="text-[15px] font-semibold">Who do you want to meet?</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-[15px] font-semibold">
+            Who do you want to meet?{" "}
+            <span className="text-after7-accent" aria-hidden="true">
+              *
+            </span>
+          </h2>
+        </div>
 
         <motion.div
           variants={staggerFast}
@@ -265,8 +307,15 @@ export function SignupInterests({
             );
           })}
         </motion.div>
+
+        {!selectedMeetPreference && (
+          <p className="mt-3 text-xs text-after7-text-muted">
+            Select who you want to meet.
+          </p>
+        )}
       </motion.div>
 
+      {/* Gender */}
       <motion.div
         variants={fadeInUp}
         initial="hidden"
@@ -276,7 +325,14 @@ export function SignupInterests({
         }}
         className="mt-7"
       >
-        <h2 className="text-[15px] font-semibold">Gender</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-[15px] font-semibold">
+            Gender{" "}
+            <span className="text-after7-accent" aria-hidden="true">
+              *
+            </span>
+          </h2>
+        </div>
 
         <motion.div
           variants={scaleIn}
@@ -287,12 +343,11 @@ export function SignupInterests({
           }}
           className="mt-3"
         >
-          <Select<string>
-            value={selectedGender === "" ? null : selectedGender}
-            onValueChange={setGender}
-            required
-          >
-            <SelectTrigger className="h-11 w-full border-border bg-after7-surface text-[14px]">
+          <Select value={selectedGender} onValueChange={setGender} required>
+            <SelectTrigger
+              className="h-11 w-full border-border bg-after7-surface text-[14px]"
+              aria-label="Select your gender"
+            >
               <SelectValue placeholder="Select your gender" />
             </SelectTrigger>
 
@@ -307,6 +362,7 @@ export function SignupInterests({
         </motion.div>
       </motion.div>
 
+      {/* Finish */}
       <motion.div
         variants={fadeInUp}
         initial="hidden"
@@ -317,25 +373,39 @@ export function SignupInterests({
         className="mt-9"
       >
         <motion.div
-          whileHover={{
-            scale: 1.01,
-          }}
-          whileTap={{
-            scale: 0.98,
-          }}
+          whileHover={
+            canFinish && !isPending
+              ? {
+                  scale: 1.01,
+                }
+              : undefined
+          }
+          whileTap={
+            canFinish && !isPending
+              ? {
+                  scale: 0.98,
+                }
+              : undefined
+          }
           transition={{
             duration: 0.15,
           }}
         >
           <Button
             type="button"
-            onClick={onFinish}
-            disabled={isPending}
+            onClick={handleFinish}
+            disabled={!canFinish || isPending}
             className="h-11 w-full rounded-md bg-after7-accent text-[15px] font-medium text-after7-black transition-colors hover:bg-after7-accent-hover disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isPending ? "Creating account..." : "Finish setup"}
           </Button>
         </motion.div>
+
+        {!canFinish && !isPending && (
+          <p className="mt-3 text-center text-xs text-after7-text-muted">
+            Complete all required fields to continue.
+          </p>
+        )}
       </motion.div>
     </section>
   );

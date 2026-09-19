@@ -44,7 +44,16 @@ export const registerUser = async (
     email,
     name: data.name.trim(),
     gender: data.gender ?? null,
+
     passwordHash,
+
+    dateOfBirth: new Date(data.dateOfBirth),
+
+    profileAvatar: data.profileAvatar ?? null,
+
+    interests: data.interests ?? [],
+
+    meetPreference: data.meetPreference ?? null,
   });
 
   /*

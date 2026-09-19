@@ -15,6 +15,11 @@ export const toUserResponse = (user: UserDocument): IUserResponse => {
     name: user.name,
     gender: user.gender,
 
+    dateOfBirth: user.dateOfBirth,
+    profileAvatar: user.profileAvatar,
+    interests: user.interests,
+    meetPreference: user.meetPreference,
+
     role: user.role,
     status: user.status,
 

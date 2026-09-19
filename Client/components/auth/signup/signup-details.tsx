@@ -6,10 +6,10 @@ import type { SignupData } from "@/context/auth";
 import {
   AuthHeader,
   AuthTitle,
-  AuthField,
-  PasswordField,
   AuthFooter,
+  PasswordField,
 } from "../shared/index";
+
 import { ProfilePhotoPicker } from "./profile-photo-picker";
 
 type SignupDetailsProps = {
@@ -23,12 +23,11 @@ export function SignupDetails({
   onChange,
   onContinue,
 }: SignupDetailsProps) {
-  const canContinue = Boolean(
-    data.name.trim() &&
-    data.email.trim() &&
+  const canContinue =
+    data.name.trim().length >= 2 &&
+    data.email.trim().length > 0 &&
     data.password.length >= 8 &&
-    data.dateOfBirth,
-  );
+    data.dateOfBirth.trim().length > 0;
 
   return (
     <section className="mx-auto w-full max-w-97.5">
@@ -40,8 +39,17 @@ export function SignupDetails({
       />
 
       <div className="mt-7 space-y-5">
-        <AuthField label="Full name">
+        {/* Full name */}
+        <div>
+          <label
+            htmlFor="signup-name"
+            className="mb-2 block text-[14px] font-medium"
+          >
+            Full name <span className="text-after7-accent">*</span>
+          </label>
+
           <Input
+            id="signup-name"
             value={data.name}
             onChange={(event) =>
               onChange({
@@ -50,12 +58,23 @@ export function SignupDetails({
             }
             placeholder="Your name"
             autoComplete="name"
+            required
+            aria-required="true"
             className="h-11 border-border bg-after7-surface px-3 text-sm"
           />
-        </AuthField>
+        </div>
 
-        <AuthField label="Email">
+        {/* Email */}
+        <div>
+          <label
+            htmlFor="signup-email"
+            className="mb-2 block text-[14px] font-medium"
+          >
+            Email <span className="text-after7-accent">*</span>
+          </label>
+
           <Input
+            id="signup-email"
             value={data.email}
             onChange={(event) =>
               onChange({
@@ -65,25 +84,38 @@ export function SignupDetails({
             placeholder="you@email.com"
             type="email"
             autoComplete="email"
+            required
+            aria-required="true"
             className="h-11 border-border bg-after7-surface px-3 text-sm"
           />
-        </AuthField>
+        </div>
 
-        <AuthField label="Password">
-          <PasswordField
-            value={data.password}
-            onChange={(password) =>
-              onChange({
-                password,
-              })
-            }
-            autoComplete="new-password"
-          />
-        </AuthField>
+        {/* Password
+            PasswordField already renders its own label.
+        */}
+        <PasswordField
+          value={data.password}
+          onChange={(password) =>
+            onChange({
+              password,
+            })
+          }
+          autoComplete="new-password"
+          required
+        />
 
-        <AuthField label="Date of birth">
+        {/* Date of birth */}
+        <div>
+          <label
+            htmlFor="signup-date-of-birth"
+            className="mb-2 block text-[14px] font-medium"
+          >
+            Date of birth <span className="text-after7-accent">*</span>
+          </label>
+
           <div className="relative">
             <Input
+              id="signup-date-of-birth"
               value={data.dateOfBirth}
               onChange={(event) =>
                 onChange({
@@ -91,13 +123,16 @@ export function SignupDetails({
                 })
               }
               type="date"
-              className="h-11 border-border bg-after7-surface px-3 text-sm"
+              required
+              aria-required="true"
+              className="h-11 border-border bg-after7-surface px-3 pr-10 text-sm"
             />
 
             <CalendarDays className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-after7-text-subtle" />
           </div>
-        </AuthField>
+        </div>
 
+        {/* Profile photo is optional */}
         <ProfilePhotoPicker
           photo={data.profilePhoto}
           avatar={data.profileAvatar}
@@ -118,10 +153,16 @@ export function SignupDetails({
         type="button"
         disabled={!canContinue}
         onClick={onContinue}
-        className="mt-6 h-11 w-full rounded-md bg-after7-accent text-sm font-medium text-after7-black hover:bg-after7-accent-hover disabled:opacity-40"
+        className="mt-6 h-11 w-full rounded-md bg-after7-accent text-sm font-medium text-after7-black hover:bg-after7-accent-hover disabled:cursor-not-allowed disabled:opacity-40"
       >
         Continue
       </Button>
+
+      {!canContinue && (
+        <p className="mt-3 text-center text-xs text-after7-text-muted">
+          Complete all required fields to continue.
+        </p>
+      )}
 
       <AuthFooter
         question="Already have an account?"

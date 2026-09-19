@@ -1,9 +1,6 @@
 import { z } from "zod";
-import { UserGender } from "../users/user.types.ts";
+import { UserGender, MeetPreference } from "../users/user.types.ts";
 
-/*
-  Password validation rules.
- */
 export const passwordSchema = z
   .string()
   .min(8, "Password must contain at least 8 characters")
@@ -21,9 +18,6 @@ export const passwordSchema = z
     "Password must contain at least one number",
   );
 
-/*
-  Registration request validation.
- */
 export const registerSchema = z.object({
   email: z
     .string()
@@ -37,12 +31,26 @@ export const registerSchema = z.object({
     .min(2, "Name must contain at least 2 characters")
     .max(100, "Name cannot exceed 100 characters"),
 
+  password: passwordSchema,
+
   gender: z.nativeEnum(UserGender).nullable().optional(),
 
-  password: passwordSchema,
+  dateOfBirth: z
+    .string()
+    .trim()
+    .min(1, "Date of birth is required")
+    .refine(
+      (value) => !Number.isNaN(Date.parse(value)),
+      "Please provide a valid date of birth",
+    ),
+
+  profileAvatar: z.string().trim().nullable().optional(),
+
+  interests: z
+    .array(z.string().trim().min(1, "Interest cannot be empty"))
+    .default([]),
+
+  meetPreference: z.nativeEnum(MeetPreference).nullable().optional(),
 });
 
-/*
-  Type inferred directly from the registration schema.
- */
 export type RegisterInput = z.infer<typeof registerSchema>;

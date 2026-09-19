@@ -1,6 +1,6 @@
 "use client";
 import { Eye, EyeOff, Lock } from "lucide-react";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Input } from "@/components/ui/input";
 
 type PasswordFieldProps = {
@@ -9,7 +9,10 @@ type PasswordFieldProps = {
   label?: string;
   placeholder?: string;
   autoComplete?: string;
-};
+} & Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  "value" | "onChange" | "type" | "placeholder" | "autoComplete"
+>;
 
 export function PasswordField({
   value,
@@ -17,34 +20,37 @@ export function PasswordField({
   label = "Password",
   placeholder = "Enter your password",
   autoComplete = "current-password",
+  ...props
 }: PasswordFieldProps) {
   const [visible, setVisible] = useState(false);
+  const id = useId();
 
   return (
     <div className="space-y-2">
-      <label
-        htmlFor="password"
-        className="text-xs font-medium text-after7-text"
-      >
-        {label}
+      <label htmlFor={id} className="text-xs font-medium text-after7-text">
+        {label}{" "}
+        <span className="text-after7-accent" aria-hidden="true">
+          *
+        </span>
       </label>
 
       <div className="relative">
         <Lock className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-after7-text-subtle" />
 
         <Input
-          id="password"
+          id={id}
           type={visible ? "text" : "password"}
           value={value}
           placeholder={placeholder}
           autoComplete={autoComplete}
           onChange={(event) => onChange(event.target.value)}
           className="h-11 px-10 text-sm"
+          {...props}
         />
 
         <button
           type="button"
-          onClick={() => setVisible((value) => !value)}
+          onClick={() => setVisible((current) => !current)}
           className="
             absolute right-2 top-1/2
             flex size-7 -translate-y-1/2
