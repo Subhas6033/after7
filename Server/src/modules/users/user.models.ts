@@ -44,6 +44,26 @@ const userSchema = new Schema<IUser, UserModel>(
       default: null,
       index: true,
     },
+    dateOfBirth: {
+      type: Date,
+      default: null,
+    },
+
+    profileAvatar: {
+      type: String,
+      default: null,
+    },
+
+    interests: {
+      type: [String],
+      default: [],
+    },
+
+    meetPreference: {
+      type: String,
+      enum: ["anyone", "similar-age & gender"],
+      default: null,
+    },
     passwordHash: {
       type: String,
       required: [true, "Password hash is required"],

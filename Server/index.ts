@@ -9,6 +9,9 @@ import {
   errorHandler,
 } from "./src/utils/helper.utils.ts";
 
+// Routes
+import authRoutes from "./src/modules/auth/auth.routes.ts";
+
 export const app = express();
 export default app;
 const corsOrigin = process.env.CORS_ORIGIN!;
@@ -107,7 +110,8 @@ app.get(
   }),
 );
 
-// TODO: APP endpoints goes here as projects grows
+// App routes
+app.use("/api/v1/auth", authRoutes);
 
 /*
   Handle requests that do not match any registered route.
